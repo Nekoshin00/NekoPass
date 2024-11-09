@@ -1,0 +1,57 @@
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox
+from typing_extensions import Literal
+import util.util_ventana as util_ventana
+from config import COLOR_MENU_LATERAL
+from sql.funciones_pagina import FuncionesPagina
+
+class FormEditarPagina(tk.Toplevel):
+
+    def __init__(self, parent, Id) -> None:
+        super().__init__()
+        self.parent = parent
+        self.Id = Id
+        self.pagina_sql= FuncionesPagina()
+        self.config_window()
+        self.contruirWidget()
+
+    def config_window(self):
+        self.title('Agregar')
+        self.iconbitmap("./imagenes/neko.ico")
+        self.config(background=COLOR_MENU_LATERAL)
+        w, h = 400, 100
+        util_ventana.centrar_ventana(self, w, h)
+        self.resizable(False, False)
+        self.grab_set()
+
+    def contruirWidget(self):
+        self.lb_pagina = tk.Label(self, text="Nombre", font=(20), padx=10, pady=10, bg=COLOR_MENU_LATERAL, fg="white")
+        self.lb_pagina.grid(row=0, column=0, sticky='W')
+
+        self.text_pagina = tk.Entry(self, font=(20), width=30)
+        self.text_pagina.grid(row=0, column=1, sticky='W')
+
+        self.btn_agregar = tk.Button(self, text="Guardar", width=16)
+        self.btn_agregar.config(command=self.editar_pagina)
+        self.btn_agregar.place(x=80, y=50)
+
+        self.btn_cerrar = tk.Button(self, text="Cerrar", width=16)
+        self.btn_cerrar.config(command=self.destroy)
+        self.btn_cerrar.place(x=232, y=50)
+
+        self.obtener_datos()
+
+    def obtener_datos(self):
+        datos = self.pagina_sql.obtener_pagina_por_id(self.Id)
+        self.text_pagina.insert(0,datos.nombre_pagina)
+
+    def editar_pagina(self):
+        respuesta = messagebox.askyesno("Confirmar edicion", "¿Estás seguro de que deseas editar esta pagina?")
+        if respuesta:
+            pagina = self.text_pagina.get()
+            self.pagina_sql.modificar_pagina(pagina, self.Id)
+            self.parent.actualizar_lista()
+            self.destroy()
+        else:
+            self.focus_set()
